@@ -9,6 +9,7 @@ let newsStore: NewsItem[] = [
     title: 'Tin mẫu: VIB ra mắt dịch vụ mới',
     description: 'Ngân hàng VIB vừa công bố ra mắt dịch vụ ngân hàng số hoàn toàn mới với nhiều tính năng ưu việt.',
     link: 'https://example.com/news/vib-new-service',
+    imageUrl: 'https://i1-vnexpress.vnecdn.net/2025/11/21/Ukraine-1763681903-3747-1763682114.png?w=1200&h=0&q=100&dpr=1&fit=crop&s=CoEuUMjiaL-xo70ZL74SyA',
     pubDate: new Date().toISOString(),
     category: 'Kinh tế',
     author: 'VIB News',

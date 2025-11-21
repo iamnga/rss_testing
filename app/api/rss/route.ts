@@ -15,18 +15,30 @@ function formatRFC822Date(isoDate: string): string {
   return date.toUTCString();
 }
 
-function createDescription(item: any, origin: string): string {
+function createDescription(item: any): string {
   // Create HTML description similar to VnExpress format
-  // Include image if available, followed by text content
+  // Include image link if available, followed by text content
   let htmlContent = '';
 
   if (item.imageUrl) {
-    htmlContent += `<img src="${item.imageUrl}" alt="${escapeXml(item.title)}" width="100%" /><br/>`;
+    htmlContent += `<a href="${item.link}"><img src="${item.imageUrl}"></a></br>`;
   }
 
   htmlContent += item.description;
 
   return htmlContent;
+}
+
+function getImageType(imageUrl: string): string {
+  const ext = imageUrl.split('.').pop()?.split('?')[0]?.toLowerCase();
+  const typeMap: { [key: string]: string } = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'webp': 'image/webp'
+  };
+  return typeMap[ext || ''] || 'image/jpeg';
 }
 
 export async function GET(request: Request) {
@@ -39,24 +51,28 @@ export async function GET(request: Request) {
 <?xml-stylesheet type="text/xsl" href="/rss.xsl"?>
 <rss version="2.0">
   <channel>
-    <title>VIB News Feed - Testing</title>
-    <link>${origin}</link>
-    <description>RSS feed for VIB customer news sentiment analysis - Testing Environment</description>
-    <language>vi</language>
+    <title>VIB News - RSS Feed</title>
+    <description>VIB RSS</description>
+    <image>
+      <url>${origin}/logo.png</url>
+      <title>VIB News - Tin tức ngân hàng VIB</title>
+      <link>${origin}</link>
+    </image>
     <pubDate>${currentDate}</pubDate>
-    <lastBuildDate>${currentDate}</lastBuildDate>
-    <generator>VIB RSS Feed Manager</generator>
+    <generator>VIB</generator>
+    <link>${origin}/api/rss</link>
 ${news.map(item => {
       const itemLink = item.link ? item.link : `${origin}/news/${item.id}`;
-      const description = createDescription(item, origin);
+      const description = createDescription(item);
+      const pubDate = formatRFC822Date(item.pubDate);
 
       return `    <item>
       <title>${escapeXml(item.title)}</title>
       <description><![CDATA[${description}]]></description>
-      <link>${escapeXml(itemLink)}</link>
-      <guid isPermaLink="${item.link ? 'true' : 'false'}">${escapeXml(itemLink)}</guid>
-      <pubDate>${formatRFC822Date(item.pubDate)}</pubDate>${item.category ? `
-      <category>${escapeXml(item.category)}</category>` : ''}
+      <pubDate>${pubDate}</pubDate>
+      <link>${itemLink}</link>
+      <guid>${itemLink}</guid>${item.imageUrl ? `
+      <enclosure type="${getImageType(item.imageUrl)}" length="1200" url="${item.imageUrl}"/>` : ''}
     </item>`;
     }).join('\n')}
   </channel>

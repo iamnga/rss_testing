@@ -4,6 +4,7 @@ export interface NewsItem {
   description: string;
   link: string;
   pubDate: string;
+  imageUrl?: string;
   category?: string;
   author?: string;
   sentiment?: 'positive' | 'negative' | 'neutral';
