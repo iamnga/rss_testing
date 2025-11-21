@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     const { origin } = new URL(request.url);
 
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/rss.xsl"?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>VIB News Feed - Testing</title>
