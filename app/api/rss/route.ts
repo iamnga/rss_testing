@@ -15,30 +15,50 @@ function formatRFC822Date(isoDate: string): string {
   return date.toUTCString();
 }
 
+function createDescription(item: any, origin: string): string {
+  // Create HTML description similar to VnExpress format
+  // Include image if available, followed by text content
+  let htmlContent = '';
+
+  if (item.imageUrl) {
+    htmlContent += `<img src="${item.imageUrl}" alt="${escapeXml(item.title)}" width="100%" /><br/>`;
+  }
+
+  htmlContent += item.description;
+
+  return htmlContent;
+}
+
 export async function GET(request: Request) {
   try {
     const news = getAllNews();
     const { origin } = new URL(request.url);
+    const currentDate = formatRFC822Date(new Date().toISOString());
 
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="/rss.xsl"?>
-<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<rss version="2.0">
   <channel>
     <title>VIB News Feed - Testing</title>
     <link>${origin}</link>
     <description>RSS feed for VIB customer news sentiment analysis - Testing Environment</description>
     <language>vi</language>
-    <lastBuildDate>${formatRFC822Date(new Date().toISOString())}</lastBuildDate>
+    <pubDate>${currentDate}</pubDate>
+    <lastBuildDate>${currentDate}</lastBuildDate>
     <generator>VIB RSS Feed Manager</generator>
-${news.map(item => `    <item>
+${news.map(item => {
+      const itemLink = item.link ? item.link : `${origin}/news/${item.id}`;
+      const description = createDescription(item, origin);
+
+      return `    <item>
       <title>${escapeXml(item.title)}</title>
-      <description>${escapeXml(item.description)}</description>
-      <link>${item.link ? escapeXml(item.link) : `${origin}/news/${item.id}`}</link>
-      <pubDate>${formatRFC822Date(item.pubDate)}</pubDate>
-      <guid isPermaLink="false">${item.id}</guid>${item.category ? `
-      <category>${escapeXml(item.category)}</category>` : ''}${item.author ? `
-      <dc:creator>${escapeXml(item.author)}</dc:creator>` : ''}
-    </item>`).join('\n')}
+      <description><![CDATA[${description}]]></description>
+      <link>${escapeXml(itemLink)}</link>
+      <guid isPermaLink="${item.link ? 'true' : 'false'}">${escapeXml(itemLink)}</guid>
+      <pubDate>${formatRFC822Date(item.pubDate)}</pubDate>${item.category ? `
+      <category>${escapeXml(item.category)}</category>` : ''}
+    </item>`;
+    }).join('\n')}
   </channel>
 </rss>`;
 
